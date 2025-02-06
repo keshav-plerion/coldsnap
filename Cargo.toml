@@ -14,6 +14,12 @@ keywords = ["AWS", "Amazon", "EBS", "snapshot"]
 default = ["aws-sdk-rust-rustls"]
 aws-sdk-rust-rustls = [ "aws-config/rustls", "aws-sdk-ebs/rustls", "aws-sdk-ec2/rustls" ]
 
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
+
 [dependencies]
 argh = "0.1"
 async-trait = "0.1"
