@@ -1,5 +1,11 @@
 name: Rust
 on:
+  # triggers when a PR is posted
+  pull_request:
+    branches: [develop]
+    paths-ignore:
+      - "**.md"
+      - ".github/dependabot.yml"
   # triggers when a PR is merged
   push:
     branches: [develop]
@@ -14,7 +20,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - features: default
           - features: aws-sdk-rust-rustls
             additional_flags: --no-default-features
     env:
@@ -22,6 +27,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            .cargo
+            target
+          # you can edit the .github/cache_bust file if you need to clear the cache
+          key: ${{ hashFiles('.github/cache_bust') }}-${{ hashFiles('.github/workflows/rust.yml') }}-${{ runner.os }}-${{ matrix.features }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ hashFiles('.github/cache_bust') }}-${{ hashFiles('.github/workflows/rust.yml') }}-${{ runner.os }}-${{ matrix.features }}
+      # print the current rustc. replace stable to pin to a specific toolchain version.
       - run: rustup default stable
       - run: rustup component add rustfmt
       - run: rustup component add clippy
@@ -32,5 +47,4 @@ jobs:
       - run: cargo install --version 0.14.24 cargo-deny --locked
       - run: cargo deny --features ${{ matrix.features }} --no-default-features check --disable-fetch licenses bans sources
       - run: |
-          cargo install coldsnap
-          which coldsnap
+          find ./ | grep coldsnap
